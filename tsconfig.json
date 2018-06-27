@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.babel.json",
+  "compilerOptions": {
+    "outDir": "dist/",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "diagnostics": true,
+  },
+  "include": ["src/"],
+  "exclude": ["devops", "node_modules"]
+}
