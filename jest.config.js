@@ -2,19 +2,17 @@ module.exports = {
   verbose: true,
   bail: false,
   collectCoverage: true,
-  coverageReporters: ['json', 'lcov'],
-  collectCoverageFrom: ['dist/**'],
+  coverageReporters: ['json', 'lcov', 'text'],
+  collectCoverageFrom: ['src/**'],
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   testRegex: '/.*\\.unit\\.[tj]s$',
   globals: {
     'ts-jest': {
-      'tsConfigFile': './tsconfig.babel.json'
+      'skipBabel': true,
+      'tsConfigFile': './tsconfig.jest.json'
     }
   },
   transform: {
     '^.+\\.[tj]s$': 'ts-jest'
   }
-  // transform: {
-  //   '^.+\\.[j]s$': './devops/babel-jest.js'
-  // }
 }

@@ -4,11 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-/* eslint-env jest */
+export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../dist/factory').default
+  return require('../src/factory').default
 }
 
 test('require', () => {

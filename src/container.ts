@@ -10,22 +10,23 @@ import Token from './token'
 import KeyValue from './keyValue'
 import { isString, isSymbol, Nullable, Class, cast } from './util'
 
+type ContainerType < T > = KeyValue<any, T>[]
+
 const globalContainerKey: string = 'pii_di_container'
 const initializeGLobal = (_global: any) => {
   _global[globalContainerKey] = []
 }
 initializeGLobal(global)
 const globalContainer = Reflect.get(global, globalContainerKey)
-const singletonContainer: KeyValue<any, any>[] = []
-const transientContainer: KeyValue<any, any>[] = []
+const singletonContainer: ContainerType<any> = []
+const transientContainer: ContainerType<any> = []
 
 type ContainerFieldTypes < T > = T | T[] | undefined | Function | Class<T>
 
 function findService<T> (
-  container: KeyValue<any, any>[],
+  container: ContainerType<any>,
   service: any
 ): Nullable<KeyValue<any, T>> {
-  if (!container) return undefined
   return container.filter(s => s.key === service).find(() => true)
 }
 
@@ -47,7 +48,11 @@ function transientService<T> (
   return findService(transientContainer, service)
 }
 
-function addOneOrMany (container: any, service: any, value: any): void {
+function addOneOrMany (
+  container: ContainerType<any>,
+  service: any,
+  value: any
+): void {
   const keyValue = findService(container, service)
   if (keyValue) {
     if (keyValue.value instanceof Array) {
@@ -64,11 +69,24 @@ function addOneOrMany (container: any, service: any, value: any): void {
   }
 }
 
-function getInstanceOrValue<T> (container: any, service: any): T[] {
-  const keyValue = findService<ContainerFieldTypes<T>>(container, service)
-  if (!keyValue) {
-    return []
+function removeService (container: ContainerType<any>, service: any): boolean {
+  const keyValue = findService(container, service)
+  if (keyValue) {
+    container.splice(container.indexOf(keyValue), 1)
+    return true
+  } else {
+    return false
   }
+}
+
+function getInstanceOrValue<T> (
+  container: ContainerType<any>,
+  service: any
+): T[] {
+  const keyValue = findService<ContainerFieldTypes<T>>(
+    container,
+    service
+  ) as KeyValue<any, ContainerFieldTypes<T>>
   let values =
     keyValue.value instanceof Array ? keyValue.value : [keyValue.value]
   const mapValues = (Value: Function | T | Class<T> | undefined) => {
@@ -87,19 +105,18 @@ function getInstanceOrValue<T> (container: any, service: any): T[] {
   return values.map<T>(mapValues).filter(value => !!value)
 }
 
-function getContainer<T> (
-  service?: string | Symbol
-): KeyValue<any, T>[] | undefined {
+function getContainer<T> (service?: string | Symbol): ContainerType<T>[] {
+  const containers = []
   if (scopeService(service)) {
-    return globalContainer
+    containers.push(globalContainer)
   }
   if (singletonService(service)) {
-    return singletonContainer
+    containers.push(singletonContainer)
   }
   if (transientService(service)) {
-    return transientContainer
+    containers.push(transientContainer)
   }
-  return undefined
+  return containers
 }
 
 export default class Container {
@@ -119,12 +136,13 @@ export default class Container {
 
   public static get<T> (
     identifier: string | Symbol | Class<T> | Function
-  ): T | undefined {
+  ): Nullable<T> {
     const service =
       isString(identifier) || isSymbol(identifier)
         ? cast<string | Symbol>(identifier)
         : Token(cast<Class<T> | Function>(identifier))
-    const container = getContainer(service)
+    const container = getContainer(service).find(() => true)
+    if (!container) return undefined
     return getInstanceOrValue<T>(container, service).find(() => true)
   }
 
@@ -136,7 +154,11 @@ export default class Container {
         ? cast<string | Symbol>(identifier)
         : Token(cast<Class<T> | Function>(identifier))
     const container = getContainer(service)
-    return getInstanceOrValue<T>(container, service)
+    const results: T[] = []
+    container.forEach(c => {
+      getInstanceOrValue<T>(c, service).forEach(r => results.push(r))
+    })
+    return results
   }
 
   public static add<T> (
@@ -162,8 +184,43 @@ export default class Container {
 
   public static addSingleton<T> (
     service: string | Symbol | Class<T>,
-    value: T | any
+    value: T | any,
+    replace: boolean = true
   ): void {
+    if (Container.has(service)) {
+      if (!replace) {
+        throw new Error('the container already has this service')
+      }
+      Container.removeSingleton(service)
+    }
     addOneOrMany(singletonContainer, service, value)
+  }
+
+  /**
+   * Remove service from Scoped container
+   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   */
+  public static removeScoped<T> (service: string | Symbol | Class<T>): boolean {
+    return removeService(globalContainer, service)
+  }
+
+  /**
+   * Remove service from Transient container
+   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   */
+  public static removeTransient<T> (
+    service: string | Symbol | Class<T>
+  ): boolean {
+    return removeService(transientContainer, service)
+  }
+
+  /**
+   * Remove service from Singleton container
+   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   */
+  public static removeSingleton<T> (
+    service: string | Symbol | Class<T>
+  ): boolean {
+    return removeService(singletonContainer, service)
   }
 }

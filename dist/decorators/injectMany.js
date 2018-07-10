@@ -1,25 +1,16 @@
 'use strict'
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-})
-
+Object.defineProperty(exports, '__esModule', { value: true })
 require('reflect-metadata')
-
-var container_1 = require('../container')
-
+const container_1 = require('../container')
 function InjectMany (option) {
   return function (target, propertyName, index) {
-    var service = option || propertyName
-
-    var getter = function getter () {
+    const service = option || propertyName
+    let getter = function () {
       return container_1.default.getServices(service)
     }
-
-    var setter = function setter (newVal) {
+    let setter = function (newVal) {
       throw new Error('This property has been injected, can not be setted')
     }
-
     Reflect.deleteProperty(target, propertyName)
     Object.defineProperty(target, propertyName, {
       get: getter,
@@ -29,7 +20,6 @@ function InjectMany (option) {
     })
   }
 }
-
 exports.InjectMany = InjectMany
 
 //# sourceMappingURL=injectMany.js.map

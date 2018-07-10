@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 import 'reflect-metadata'
-import Token from '../../dist/token'
+import Token from '../../src/token'
 
 export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../../dist/decorators/inject').Inject
+  return require('../../src/decorators/inject').Inject
 }
 
 test('require', () => {
@@ -24,7 +24,7 @@ test('require', () => {
 test('inject without identifier', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton('id', 1000)
   class Test {
     @Inject() id
@@ -36,7 +36,7 @@ test('inject without identifier', () => {
 test('inject with string identifier', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton('test', 1000)
   class Test {
     @Inject('test') id
@@ -48,7 +48,7 @@ test('inject with string identifier', () => {
 test('inject with symbol identifier', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton(Symbol.for('test'), 1000)
   class Test {
     @Inject(Symbol.for('test'))
@@ -61,7 +61,7 @@ test('inject with symbol identifier', () => {
 test('inject with token identifier', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton(Token('test'), 1000)
   class Test {
     @Inject(Token('test'))
@@ -74,7 +74,7 @@ test('inject with token identifier', () => {
 test('fail on set injected property', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton('test', 1000)
   class Test {
     @Inject('test') id
@@ -88,13 +88,13 @@ test('fail on set injected property', () => {
 test('fail on inject on sealed object', () => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../dist/container').default
+  const Container = require('../../src/container').default
   Container.addSingleton('test', 1000)
   function sealed (target, propertyName, index) {
     Object.seal(target)
   }
   expect(() => {
-    // eslint-disable-next-line no-unused-vars
+    // tslint:disable-next-line: no-unused-variable
     class Test {
       @Inject('test')
       @sealed
