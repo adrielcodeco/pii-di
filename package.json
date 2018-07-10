@@ -1,6 +1,6 @@
 {
   "name": "@pii/di",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library to dependency injection implementation",
   "main": "dist/index.js",
   "engines": {
