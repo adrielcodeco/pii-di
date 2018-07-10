@@ -100,5 +100,5 @@ test('fail on inject on sealed object', () => {
       @sealed
       id
     }
-  }).toThrowError(/Cannot define property id, object is not extensible/)
+  }).toThrowError(/Cannot define property[\s:]id, object is not extensible/)
 })

@@ -3,10 +3,12 @@
 Pii DI is a library to dependency injection implementation
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
-[![Build Status](https://travis-ci.org/adrielcodeco/pii-di.svg?branch=master)](https://travis-ci.org/adrielcodeco/pii-di)
+[![Build Status (linux, Mac)](https://travis-ci.org/adrielcodeco/pii-di.svg?branch=master)](https://travis-ci.org/adrielcodeco/pii-di)
+[![Build status (Windows)](https://ci.appveyor.com/api/projects/status/b5637wi8frgovcm1?svg=true)](https://ci.appveyor.com/project/adrielcodeco/pii-di/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/adrielcodeco/pii-di/badge.svg?branch=master)](https://coveralls.io/github/adrielcodeco/pii-di?branch=master)
 
 [![NPM](https://nodei.co/npm/@pii/di.png)](https://npmjs.org/package/@pii/di)
+
 
 ## Installation
 

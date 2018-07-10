@@ -186,7 +186,7 @@ const testFailOnInjectOnSealedObject = (method, identifier) => {
       @sealed
       id: number[]
     }
-  }).toThrowError(/Cannot define property id, object is not extensible/)
+  }).toThrowError(/Cannot define property[\s:]id, object is not extensible/)
 }
 
 describe('fail on inject on sealed object', () => {
