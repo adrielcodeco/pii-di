@@ -1,3 +1,4 @@
 import 'reflect-metadata';
-export declare function InjectMany(option?: string | symbol): Function;
+import { Class } from '../util';
+export declare function InjectMany(option?: string | symbol | Class<any>): Function;
 //# sourceMappingURL=injectMany.d.ts.map

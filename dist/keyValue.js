@@ -1,11 +1,11 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class KeyValue {
-  constructor (key, value) {
-    this.key = key
-    this.value = value
-  }
+    constructor(key, value) {
+        this.key = key;
+        this.value = value;
+    }
 }
-exports.default = KeyValue
+exports.default = KeyValue;
 
 //# sourceMappingURL=keyValue.js.map

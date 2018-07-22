@@ -7,8 +7,10 @@
 
 import 'reflect-metadata'
 import Container from '../container'
+import Token from '../token'
+import { Class } from '../util'
 
-export function InjectMany (option?: string | symbol): Function {
+export function InjectMany (option?: string | symbol | Class<any>): Function {
   return function (
     target: Object,
     propertyName: string | symbol,
@@ -19,6 +21,14 @@ export function InjectMany (option?: string | symbol): Function {
     //   target,
     //   propertyName
     // )
+    if (
+      typeof option !== 'string' &&
+      typeof option !== 'symbol' &&
+      option &&
+      option.constructor
+    ) {
+      option = Token(option)
+    }
     const service = option || propertyName
     // let _val = target[propertyName]
     let getter = function () {

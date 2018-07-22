@@ -177,8 +177,12 @@ export default class Container {
 
   public static addTransient<T> (
     service: string | Symbol | Class<T>,
-    value: T | any
+    value?: T | any
   ): void {
+    if (!value && service.constructor) {
+      value = service
+      service = Token(service as Class<T>)
+    }
     addOneOrMany(transientContainer, service, value)
   }
 
