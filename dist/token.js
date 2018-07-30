@@ -8,7 +8,7 @@ function describe(Identifier) {
     return Reflect.ownKeys(target)
         .concat(Object.keys(target))
         .concat(Object.getOwnPropertyNames(instance))
-        .filter((v, i, a) => a.indexOf(v) === i && v !== 'constructor');
+        .filter((v, i, a) => a.indexOf(v) === i && v !== 'constructor' && typeof v !== 'symbol');
 }
 function Token(identifier) {
     if (!identifier) {

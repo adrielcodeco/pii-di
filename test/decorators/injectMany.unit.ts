@@ -21,13 +21,13 @@ test('require', () => {
   }).not.toThrow()
 })
 
-const testWithoutIdentifier = (method, result) => {
+const testWithoutIdentifier = (method, result, replace?: any) => {
   expect.assertions(1)
   const InjectMany = requireTest()
   const Container = require('../../src/container').default
-  method(Container)('id', 1000)
-  method(Container)('id', 1001)
-  method(Container)('id', 1002)
+  method(Container)('id', 1000, replace)
+  method(Container)('id', 1001, replace)
+  method(Container)('id', 1002, replace)
   class Test {
     @InjectMany() id: number[]
   }
@@ -36,8 +36,12 @@ const testWithoutIdentifier = (method, result) => {
 }
 
 describe('inject without identifier', () => {
-  test('with singleton Container', () => {
-    testWithoutIdentifier(c => c.addSingleton, [1002])
+  test('with singleton(replace = false) Container', () => {
+    testWithoutIdentifier(c => c.addSingleton, [1000, 1001, 1002], false)
+  })
+
+  test('with singleton(replace = true) Container', () => {
+    testWithoutIdentifier(c => c.addSingleton, [1002], true)
   })
 
   test('with transient Container', () => {

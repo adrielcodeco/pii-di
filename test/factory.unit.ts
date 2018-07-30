@@ -21,27 +21,33 @@ test('require', () => {
 test('call newInstance', () => {
   expect.assertions(2)
   const value = class Test {
-    constructor () {
-      this.test = Math.random()
-    }
+    test = Math.random()
   }
   const ServiceInstanceFactory = requireTest()
   const factory = new ServiceInstanceFactory(value)
   expect(factory.newInstance()).toBeInstanceOf(value)
-  // $FlowFixMe
   expect(factory.newInstance()).not.toStrictEqual(factory.newInstance())
 })
 
 test('call newInstance with lazyInstance = true', () => {
   expect.assertions(2)
   const value = class Test {
-    constructor () {
-      this.test = Math.random()
-    }
+    test = Math.random()
   }
   const ServiceInstanceFactory = requireTest()
   const factory = new ServiceInstanceFactory(value, true)
   expect(factory.newInstance()).toBeInstanceOf(value)
-  // $FlowFixMe
   expect(factory.newInstance()).toStrictEqual(factory.newInstance())
+})
+
+test('call newInstance with maker', () => {
+  expect.assertions(2)
+  const value = class Test {
+    test = Math.random()
+  }
+  const newValue = new value()
+  const ServiceInstanceFactory = requireTest()
+  const factory = new ServiceInstanceFactory(undefined, true, () => newValue)
+  expect(factory.newInstance()).toBeInstanceOf(value)
+  expect(factory.newInstance()).toStrictEqual(newValue)
 })

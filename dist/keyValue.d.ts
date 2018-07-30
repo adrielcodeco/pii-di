@@ -1,4 +1,4 @@
-import { Nullable } from './util';
+import { Nullable } from '@pii/utils';
 export default class KeyValue<K, V> {
     key: Nullable<K>;
     value: Nullable<V>;

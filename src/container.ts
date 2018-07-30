@@ -8,7 +8,7 @@
 import ServiceInstanceFactory from './factory'
 import Token from './token'
 import KeyValue from './keyValue'
-import { isString, isSymbol, Nullable, Class, cast } from './util'
+import { isString, isSymbol, isClass, Nullable, Class, cast } from '@pii/utils'
 
 type ContainerType < T > = KeyValue<any, T>[]
 
@@ -92,11 +92,7 @@ function getInstanceOrValue<T> (
   const mapValues = (Value: Function | T | Class<T> | undefined) => {
     if (Value instanceof ServiceInstanceFactory) {
       return cast<ServiceInstanceFactory<T>>(Value).newInstance()
-    } else if (
-      typeof Value === 'function' &&
-      Value.prototype &&
-      Value.prototype.constructor
-    ) {
+    } else if (isClass(Value)) {
       return new (Value as Class<T>)()
     } else {
       return cast<T>(Value)
@@ -117,6 +113,16 @@ function getContainer<T> (service?: string | Symbol): ContainerType<T>[] {
     containers.push(transientContainer)
   }
   return containers
+}
+
+export type Maker < T > = (() => T)
+export type Factory < T > = {
+  service: string | Symbol | Class<T>
+  maker: Maker<T>
+}
+
+function isFactory<T> (service: any): service is Factory<T> {
+  return service.service && service.maker
 }
 
 export default class Container {
@@ -175,11 +181,25 @@ export default class Container {
     addOneOrMany(globalContainer, service, value)
   }
 
+  // tslint:disable unified-signatures
+  public static addTransient<T> (factory: Factory<T>): void
   public static addTransient<T> (
     service: string | Symbol | Class<T>,
     value?: T | any
+  ): void
+  // tslint:enable unified-signatures
+  public static addTransient<T> (
+    service: string | Symbol | Class<T> | Factory<T>,
+    value?: T | any
   ): void {
-    if (!value && service.constructor) {
+    if (isFactory<T>(service)) {
+      const factory = service
+      service = isClass(factory.service)
+        ? Token(factory.service as Class<T>)
+        : factory.service
+      value = new ServiceInstanceFactory(undefined, true, factory.maker)
+    }
+    if (!value && isClass(service)) {
       value = service
       service = Token(service as Class<T>)
     }
@@ -191,10 +211,7 @@ export default class Container {
     value: T | any,
     replace: boolean = true
   ): void {
-    if (Container.has(service)) {
-      if (!replace) {
-        throw new Error('the container already has this service')
-      }
+    if (Container.has(service) && replace) {
       Container.removeSingleton(service)
     }
     addOneOrMany(singletonContainer, service, value)

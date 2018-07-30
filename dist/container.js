@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const factory_1 = require("./factory");
 const token_1 = require("./token");
 const keyValue_1 = require("./keyValue");
-const util_1 = require("./util");
+const utils_1 = require("@pii/utils");
 const globalContainerKey = 'pii_di_container';
 const initializeGLobal = (_global) => {
     _global[globalContainerKey] = [];
@@ -53,15 +53,13 @@ function getInstanceOrValue(container, service) {
     let values = keyValue.value instanceof Array ? keyValue.value : [keyValue.value];
     const mapValues = (Value) => {
         if (Value instanceof factory_1.default) {
-            return util_1.cast(Value).newInstance();
+            return utils_1.cast(Value).newInstance();
         }
-        else if (typeof Value === 'function' &&
-            Value.prototype &&
-            Value.prototype.constructor) {
+        else if (utils_1.isClass(Value)) {
             return new Value();
         }
         else {
-            return util_1.cast(Value);
+            return utils_1.cast(Value);
         }
     };
     return values.map(mapValues).filter(value => !!value);
@@ -79,28 +77,31 @@ function getContainer(service) {
     }
     return containers;
 }
+function isFactory(service) {
+    return service.service && service.maker;
+}
 class Container {
     static has(identifier) {
-        const service = util_1.isString(identifier) || util_1.isSymbol(identifier)
-            ? util_1.cast(identifier)
-            : token_1.default(util_1.cast(identifier));
+        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+            ? utils_1.cast(identifier)
+            : token_1.default(utils_1.cast(identifier));
         return (!!scopeService(service) ||
             !!singletonService(service) ||
             !!transientService(service));
     }
     static get(identifier) {
-        const service = util_1.isString(identifier) || util_1.isSymbol(identifier)
-            ? util_1.cast(identifier)
-            : token_1.default(util_1.cast(identifier));
+        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+            ? utils_1.cast(identifier)
+            : token_1.default(utils_1.cast(identifier));
         const container = getContainer(service).find(() => true);
         if (!container)
             return undefined;
         return getInstanceOrValue(container, service).find(() => true);
     }
     static getServices(identifier) {
-        const service = util_1.isString(identifier) || util_1.isSymbol(identifier)
-            ? util_1.cast(identifier)
-            : token_1.default(util_1.cast(identifier));
+        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+            ? utils_1.cast(identifier)
+            : token_1.default(utils_1.cast(identifier));
         const container = getContainer(service);
         const results = [];
         container.forEach(c => {
@@ -115,17 +116,21 @@ class Container {
         addOneOrMany(globalContainer, service, value);
     }
     static addTransient(service, value) {
-        if (!value && service.constructor) {
+        if (isFactory(service)) {
+            const factory = service;
+            service = utils_1.isClass(factory.service)
+                ? token_1.default(factory.service)
+                : factory.service;
+            value = new factory_1.default(undefined, true, factory.maker);
+        }
+        if (!value && utils_1.isClass(service)) {
             value = service;
             service = token_1.default(service);
         }
         addOneOrMany(transientContainer, service, value);
     }
     static addSingleton(service, value, replace = true) {
-        if (Container.has(service)) {
-            if (!replace) {
-                throw new Error('the container already has this service');
-            }
+        if (Container.has(service) && replace) {
             Container.removeSingleton(service);
         }
         addOneOrMany(singletonContainer, service, value);

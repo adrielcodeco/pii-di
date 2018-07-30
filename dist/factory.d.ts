@@ -1,9 +1,10 @@
-import { Class } from './util';
+import { Class } from '@pii/utils';
 export default class ServiceInstanceFactory<T> {
     type: Class<T>;
     lazyInstance: boolean;
     _instance?: T;
-    constructor(type: Class<T>, lazyInstance?: boolean);
+    _maker?: () => T;
+    constructor(type: Class<T> | undefined, lazyInstance?: boolean, maker?: undefined | (() => T));
     newInstance(): T;
 }
 //# sourceMappingURL=factory.d.ts.map
