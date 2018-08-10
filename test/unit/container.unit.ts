@@ -7,11 +7,11 @@
 
 export {}
 
-const Token = require('../src/token').default
+const Token = require('../../src/token').default
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../src/container').default
+  return require('../../src/container').default
 }
 
 test('require', () => {
@@ -280,7 +280,7 @@ describe('happy path', () => {
       const makeTest = key => {
         expect.assertions(1)
         const Container = requireTest()
-        const ServiceInstanceFactory = require('../src/factory').default
+        const ServiceInstanceFactory = require('../../src/factory').default
         Container.addTransient(key, new ServiceInstanceFactory(value))
         expect(Container.get(key)).toBeInstanceOf(value)
       }

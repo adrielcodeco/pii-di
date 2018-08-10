@@ -6,10 +6,17 @@
  */
 
 import 'reflect-metadata'
-import { Class } from '@pii/utils'
 import Container from '../container'
 import InjectFunction from './injectLogic'
 
-export function InjectMany (option?: string | symbol | Class<any>): Function {
-  return InjectFunction(Container.getServices, option)
+export function InjectMany (identifier?: any): Function {
+  return InjectFunction(
+    (identifier: any) => {
+      if (Container.has(identifier)) {
+        return Container.getServices(identifier)
+      }
+      return undefined
+    },
+    identifier
+  )
 }

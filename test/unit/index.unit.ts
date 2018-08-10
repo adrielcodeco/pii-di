@@ -7,7 +7,7 @@
 export {}
 
 const requireTest = () => {
-  return require('../src')
+  return require('../../src')
 }
 
 test('require', () => {

@@ -25,6 +25,7 @@ function transientService(service) {
     return findService(transientContainer, service);
 }
 function addOneOrMany(container, service, value) {
+    service = utils_1.isClass(service) ? token_1.default(service) : service;
     const keyValue = findService(container, service);
     if (keyValue) {
         if (keyValue.value instanceof Array) {
@@ -39,6 +40,7 @@ function addOneOrMany(container, service, value) {
     }
 }
 function removeService(container, service) {
+    service = utils_1.isClass(service) ? token_1.default(service) : service;
     const keyValue = findService(container, service);
     if (keyValue) {
         container.splice(container.indexOf(keyValue), 1);
@@ -55,7 +57,7 @@ function getInstanceOrValue(container, service) {
         if (Value instanceof factory_1.default) {
             return utils_1.cast(Value).newInstance();
         }
-        else if (utils_1.isClass(Value)) {
+        else if (container !== singletonContainer && utils_1.isClass(Value)) {
             return new Value();
         }
         else {
@@ -69,16 +71,16 @@ function getContainer(service) {
     if (scopeService(service)) {
         containers.push(globalContainer);
     }
-    if (singletonService(service)) {
-        containers.push(singletonContainer);
-    }
     if (transientService(service)) {
         containers.push(transientContainer);
+    }
+    if (singletonService(service)) {
+        containers.push(singletonContainer);
     }
     return containers;
 }
 function isFactory(service) {
-    return service.service && service.maker;
+    return service && service.service && service.maker;
 }
 class Container {
     static has(identifier) {
@@ -110,17 +112,24 @@ class Container {
         return results;
     }
     static add(service, value) {
-        addOneOrMany(singletonContainer, service, value);
+        Container.addSingleton(service, value);
     }
     static addScoped(service, value) {
+        if (isFactory(service)) {
+            const factory = service;
+            service = factory.service;
+            value = new factory_1.default(undefined, true, factory.maker);
+        }
+        if (!value && utils_1.isClass(service)) {
+            value = service;
+            service = token_1.default(service);
+        }
         addOneOrMany(globalContainer, service, value);
     }
     static addTransient(service, value) {
         if (isFactory(service)) {
             const factory = service;
-            service = utils_1.isClass(factory.service)
-                ? token_1.default(factory.service)
-                : factory.service;
+            service = factory.service;
             value = new factory_1.default(undefined, true, factory.maker);
         }
         if (!value && utils_1.isClass(service)) {

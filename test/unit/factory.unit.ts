@@ -8,7 +8,7 @@ export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../src/factory').default
+  return require('../../src/factory').default
 }
 
 test('require', () => {

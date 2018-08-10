@@ -22,6 +22,7 @@ const singletonContainer: ContainerType<any> = []
 const transientContainer: ContainerType<any> = []
 
 type ContainerFieldTypes < T > = T | T[] | undefined | Function | Class<T>
+type Identifier < T > = string | Symbol | Class<T> | Function
 
 function findService<T> (
   container: ContainerType<any>,
@@ -48,11 +49,12 @@ function transientService<T> (
   return findService(transientContainer, service)
 }
 
-function addOneOrMany (
+function addOneOrMany<T> (
   container: ContainerType<any>,
-  service: any,
+  service: Identifier<T>,
   value: any
 ): void {
+  service = isClass(service) ? Token(service as Class<T>) : service
   const keyValue = findService(container, service)
   if (keyValue) {
     if (keyValue.value instanceof Array) {
@@ -70,6 +72,7 @@ function addOneOrMany (
 }
 
 function removeService (container: ContainerType<any>, service: any): boolean {
+  service = isClass(service) ? Token(service as Class<any>) : service
   const keyValue = findService(container, service)
   if (keyValue) {
     container.splice(container.indexOf(keyValue), 1)
@@ -92,7 +95,7 @@ function getInstanceOrValue<T> (
   const mapValues = (Value: Function | T | Class<T> | undefined) => {
     if (Value instanceof ServiceInstanceFactory) {
       return cast<ServiceInstanceFactory<T>>(Value).newInstance()
-    } else if (isClass(Value)) {
+    } else if (container !== singletonContainer && isClass(Value)) {
       return new (Value as Class<T>)()
     } else {
       return cast<T>(Value)
@@ -106,11 +109,11 @@ function getContainer<T> (service?: string | Symbol): ContainerType<T>[] {
   if (scopeService(service)) {
     containers.push(globalContainer)
   }
-  if (singletonService(service)) {
-    containers.push(singletonContainer)
-  }
   if (transientService(service)) {
     containers.push(transientContainer)
+  }
+  if (singletonService(service)) {
+    containers.push(singletonContainer)
   }
   return containers
 }
@@ -122,13 +125,11 @@ export type Factory < T > = {
 }
 
 function isFactory<T> (service: any): service is Factory<T> {
-  return service.service && service.maker
+  return service && service.service && service.maker
 }
 
 export default class Container {
-  public static has<T> (
-    identifier: string | Symbol | Class<T> | Function
-  ): boolean {
+  public static has<T> (identifier: Identifier<T>): boolean {
     const service: string | Symbol =
       isString(identifier) || isSymbol(identifier)
         ? cast<string | Symbol>(identifier)
@@ -140,9 +141,7 @@ export default class Container {
     )
   }
 
-  public static get<T> (
-    identifier: string | Symbol | Class<T> | Function
-  ): Nullable<T> {
+  public static get<T> (identifier: Identifier<T>): Nullable<T> {
     const service =
       isString(identifier) || isSymbol(identifier)
         ? cast<string | Symbol>(identifier)
@@ -152,9 +151,7 @@ export default class Container {
     return getInstanceOrValue<T>(container, service).find(() => true)
   }
 
-  public static getServices<T> (
-    identifier: string | Symbol | Class<T> | Function
-  ): T[] {
+  public static getServices<T> (identifier: Identifier<T>): T[] {
     const service =
       isString(identifier) || isSymbol(identifier)
         ? cast<string | Symbol>(identifier)
@@ -167,81 +164,82 @@ export default class Container {
     return results
   }
 
-  public static add<T> (
-    service: string | Symbol | Class<T>,
-    value: T | any
-  ): void {
-    addOneOrMany(singletonContainer, service, value)
-  }
-
-  public static addScoped<T> (
-    service: string | Symbol | Class<T>,
-    value: T | any
-  ): void {
-    addOneOrMany(globalContainer, service, value)
+  public static add<T> (service: Identifier<T>, value: T | any): void {
+    Container.addSingleton(service, value)
   }
 
   // tslint:disable unified-signatures
-  public static addTransient<T> (factory: Factory<T>): void
-  public static addTransient<T> (
-    service: string | Symbol | Class<T>,
-    value?: T | any
-  ): void
+  public static addScoped<T> (factory: Factory<T>): void
+  public static addScoped<T> (service: Identifier<T>, value?: T | any): void
   // tslint:enable unified-signatures
-  public static addTransient<T> (
-    service: string | Symbol | Class<T> | Factory<T>,
+  public static addScoped<T> (
+    service: Identifier<T> | Factory<T>,
     value?: T | any
   ): void {
     if (isFactory<T>(service)) {
       const factory = service
-      service = isClass(factory.service)
-        ? Token(factory.service as Class<T>)
-        : factory.service
+      service = factory.service
       value = new ServiceInstanceFactory(undefined, true, factory.maker)
     }
     if (!value && isClass(service)) {
       value = service
       service = Token(service as Class<T>)
     }
-    addOneOrMany(transientContainer, service, value)
+    addOneOrMany<T>(globalContainer, service, value)
+  }
+
+  // tslint:disable unified-signatures
+  public static addTransient<T> (factory: Factory<T>): void
+  public static addTransient<T> (service: Identifier<T>, value?: T | any): void
+  // tslint:enable unified-signatures
+  public static addTransient<T> (
+    service: Identifier<T> | Factory<T>,
+    value?: T | any
+  ): void {
+    if (isFactory<T>(service)) {
+      const factory = service
+      service = factory.service
+      value = new ServiceInstanceFactory(undefined, true, factory.maker)
+    }
+    if (!value && isClass(service)) {
+      value = service
+      service = Token(service as Class<T>)
+    }
+    addOneOrMany<T>(transientContainer, service, value)
   }
 
   public static addSingleton<T> (
-    service: string | Symbol | Class<T>,
+    service: Identifier<T>,
     value: T | any,
     replace: boolean = true
   ): void {
     if (Container.has(service) && replace) {
       Container.removeSingleton(service)
     }
-    addOneOrMany(singletonContainer, service, value)
+    addOneOrMany<T>(singletonContainer, service, value)
   }
 
   /**
    * Remove service from Scoped container
-   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   * @param {string | Symbol | { new (...args: any[]): T} | Function} service service identifier
    */
-  public static removeScoped<T> (service: string | Symbol | Class<T>): boolean {
+  public static removeScoped<T> (service: Identifier<T>): boolean {
     return removeService(globalContainer, service)
   }
 
   /**
    * Remove service from Transient container
-   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   * @param {string | Symbol | { new (...args: any[]): T} | Function} service service identifier
    */
-  public static removeTransient<T> (
-    service: string | Symbol | Class<T>
-  ): boolean {
+  public static removeTransient<T> (service: Identifier<T>): boolean {
     return removeService(transientContainer, service)
   }
 
   /**
    * Remove service from Singleton container
-   * @param {string | Symbol | { new (...args: any[]): T}} service service identifier
+   * @param {string | Symbol | { new (...args: any[]): T} | Function} service service identifier
    */
-  public static removeSingleton<T> (
-    service: string | Symbol | Class<T>
-  ): boolean {
+  public static removeSingleton<T> (service: Identifier<T>): boolean {
     return removeService(singletonContainer, service)
   }
 }

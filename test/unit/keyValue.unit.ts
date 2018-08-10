@@ -8,7 +8,7 @@ export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../src/keyValue').default
+  return require('../../src/keyValue').default
 }
 
 test('require', () => {

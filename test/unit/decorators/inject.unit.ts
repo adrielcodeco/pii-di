@@ -4,14 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
 import 'reflect-metadata'
-import Token from '../../src/token'
+import Token from '../../../src/token'
 
 export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../../src/decorators/inject').Inject
+  return require('../../../src/decorators/inject').Inject
 }
 
 test('require', () => {
@@ -24,12 +25,12 @@ test('require', () => {
 const testWithoutIdentifier = (method, result, replace?: any) => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   method(Container)('id', 1000, replace)
   method(Container)('id', 1001, replace)
   method(Container)('id', 1002, replace)
   class Test {
-    @Inject() id: number[]
+    @Inject() id!: number
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -56,12 +57,12 @@ describe('inject without identifier', () => {
 const testWithIdentifier = (method, identifier, result, replace?: boolean) => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   method(Container)(identifier, 1000, replace)
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @Inject(identifier) id: number[]
+    @Inject(identifier) id!: number
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -125,14 +126,14 @@ const testWithClassIdentifier = (method, replace?: boolean) => {
   class Key { }
   expect.assertions(2)
   const Inject = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   const k1 = new Key()
   const k2 = new Key()
   method(Container)(Key, k1, replace)
   method(Container)(Key, k2, replace)
   class Test {
-    @Inject() id1: Key
-    @Inject(Key) id2: Key
+    @Inject() id1!: Key
+    @Inject(Key) id2!: any
   }
   const test = new Test()
   expect(test.id1).toEqual(replace ? k2 : k1)
@@ -163,18 +164,19 @@ const testFailOnSetInjectedProperty = (
   identifier,
   replace?: boolean
 ) => {
-  expect.assertions(1)
+  expect.assertions(2)
   const Inject = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   method(Container)(identifier, 1000, replace)
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @Inject(identifier) id: number[]
+    @Inject(identifier) id!: number
   }
   const test = new Test()
+  expect(() => { test.id = undefined }).not.toThrow()
   expect(() => {
-    test.id = [1]
+    test.id = 1
   }).toThrowError(/This property has been injected, can not be setted/)
 }
 
@@ -249,7 +251,7 @@ const testFailOnInjectOnSealedObject = (
 ) => {
   expect.assertions(1)
   const Inject = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   method(Container)(identifier, 1000, replace)
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
@@ -261,7 +263,7 @@ const testFailOnInjectOnSealedObject = (
     class Test {
       @Inject(identifier)
       @sealed
-      id: number[]
+      id!: number
     }
   }).toThrowError(/Cannot define property[\s:]id, object is not extensible/)
 }

@@ -6,46 +6,32 @@
  */
 
 import 'reflect-metadata'
-import { Class, functionArgs, isClass } from '@pii/utils'
+import { isClass } from '@pii/utils'
 import Token from '../token'
 
 export default function InjectFunction (
-  containerServiceGetter: (
-    identifier: string | Symbol | Class<any> | Function
-  ) => any,
-  option?: string | symbol | Class<any>
+  containerServiceGetter: (identifier: any) => any,
+  identifier?: any
 ): Function {
   return function (target: Object, propertyName: string | symbol, index?: any) {
     let type!: string
-    let service!: string | symbol | (string | symbol)[]
+    let services!: any[]
     if (
-      typeof option !== 'string' &&
-      typeof option !== 'symbol' &&
-      isClass(option)
+      typeof identifier !== 'string' &&
+      typeof identifier !== 'symbol' &&
+      isClass(identifier)
     ) {
-      service = Token(option)
+      services = [identifier, Token(identifier)]
     } else {
-      if (!propertyName && index && typeof index === 'number') {
-        propertyName = functionArgs(target)[index]
-        type = Reflect.getMetadata('design:paramtypes', target)[index]
-        service = (type ? Token(type) : undefined) || propertyName
-      } else {
-        type = Reflect.getMetadata('design:type', target, propertyName)
-        service = [
-          option as string | symbol,
-          (type ? Token(type) : ''),
-          propertyName
-        ]
-      }
+      type = Reflect.getMetadata('design:type', target, propertyName)
+      services = [identifier, type, Token(type), propertyName]
     }
     // let _val = target[propertyName]
     let getter = function () {
-      if (service instanceof Array) {
-        return service
-          .map(s => (s ? containerServiceGetter(s) : undefined))
-          .find((s: any) => s)
-      }
-      return containerServiceGetter(service)
+      return services
+        .filter(s => s)
+        .map(s => containerServiceGetter(s))
+        .find((s: any) => s)
     }
     let setter = function (newVal: any) {
       if (!newVal) return

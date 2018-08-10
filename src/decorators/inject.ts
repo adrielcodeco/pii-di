@@ -6,10 +6,9 @@
  */
 
 import 'reflect-metadata'
-import { Class } from '@pii/utils'
 import Container from '../container'
 import InjectFunction from './injectLogic'
 
-export function Inject (option?: string | symbol | Class<any>): Function {
-  return InjectFunction(Container.get, option)
+export function Inject (identifier?: any): Function {
+  return InjectFunction(Container.get, identifier)
 }

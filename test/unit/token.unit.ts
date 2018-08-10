@@ -8,7 +8,7 @@ export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../src/token').default
+  return require('../../src/token').default
 }
 
 /**
