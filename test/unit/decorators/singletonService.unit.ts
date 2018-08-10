@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 import 'reflect-metadata'
-import Token from '../../src/token'
+import Token from '../../../src/token'
 
 export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../../src/decorators/singletonService').SingletonService
+  return require('../../../src/decorators/singletonService').SingletonService
 }
 
 test('require', () => {
@@ -24,7 +24,7 @@ test('require', () => {
 test('Add service', () => {
   expect.assertions(1)
   const SingletonService = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   @SingletonService()
   // tslint:disable-next-line: no-unused-variable
   class Test {
@@ -37,7 +37,7 @@ test('Add service', () => {
 test('Add service with string identifier', () => {
   expect.assertions(1)
   const SingletonService = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   @SingletonService('test')
   // tslint:disable-next-line: no-unused-variable
   class Test {
@@ -50,7 +50,7 @@ test('Add service with string identifier', () => {
 test('Add service with symbol identifier', () => {
   expect.assertions(1)
   const SingletonService = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   @SingletonService(Symbol.for('test'))
   // tslint:disable-next-line: no-unused-variable
   class Test {
@@ -63,7 +63,7 @@ test('Add service with symbol identifier', () => {
 test('Add service with token identifier', () => {
   expect.assertions(1)
   const SingletonService = requireTest()
-  const Container = require('../../src/container').default
+  const Container = require('../../../src/container').default
   @SingletonService(Token('test'))
   // tslint:disable-next-line: no-unused-variable
   class Test {

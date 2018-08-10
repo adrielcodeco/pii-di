@@ -1,25 +1,16 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', { value: true })
-require('reflect-metadata')
-const container_1 = require('../container')
-function InjectMany (option) {
-  return function (target, propertyName, index) {
-    const service = option || propertyName
-    let getter = function () {
-      return container_1.default.getServices(service)
-    }
-    let setter = function (newVal) {
-      throw new Error('This property has been injected, can not be setted')
-    }
-    Reflect.deleteProperty(target, propertyName)
-    Object.defineProperty(target, propertyName, {
-      get: getter,
-      set: setter,
-      enumerable: true,
-      configurable: true
-    })
-  }
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+require("reflect-metadata");
+const container_1 = require("../container");
+const injectLogic_1 = require("./injectLogic");
+function InjectMany(identifier) {
+    return injectLogic_1.default((identifier) => {
+        if (container_1.default.has(identifier)) {
+            return container_1.default.getServices(identifier);
+        }
+        return undefined;
+    }, identifier);
 }
-exports.InjectMany = InjectMany
+exports.InjectMany = InjectMany;
 
 //# sourceMappingURL=injectMany.js.map

@@ -14,6 +14,8 @@ const tasks = [
   'pkgIncreaseVersion',
   'precommit',
   'test',
+  'test-bdd',
+  'test-unit',
   'typecheck'
 ]
 

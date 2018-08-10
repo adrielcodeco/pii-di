@@ -4,14 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-export {}
-
 import 'reflect-metadata'
-import Token from '../../src/token'
+import Token from '../../../src/token'
+
+export {}
 
 const requireTest = () => {
   jest.resetModules()
-  return require('../../src/decorators/transientService').TransientService
+  delete global['pii_di_container']
+  return require('../../../src/decorators/scopeService').ScopeService
 }
 
 test('require', () => {
@@ -23,10 +24,9 @@ test('require', () => {
 
 test('Add service', () => {
   expect.assertions(1)
-  const TransientService = requireTest()
-  const Container = require('../../src/container').default
-  @TransientService()
-  // tslint:disable-next-line: no-unused-variable
+  const ScopeService = requireTest()
+  const Container = require('../../../src/container').default
+  @ScopeService()
   class Test {
     id = 1000
   }
@@ -36,9 +36,9 @@ test('Add service', () => {
 
 test('Add service with string identifier', () => {
   expect.assertions(1)
-  const TransientService = requireTest()
-  const Container = require('../../src/container').default
-  @TransientService('test')
+  const ScopeService = requireTest()
+  const Container = require('../../../src/container').default
+  @ScopeService('test')
   // tslint:disable-next-line: no-unused-variable
   class Test {
     id = 1000
@@ -49,9 +49,9 @@ test('Add service with string identifier', () => {
 
 test('Add service with symbol identifier', () => {
   expect.assertions(1)
-  const TransientService = requireTest()
-  const Container = require('../../src/container').default
-  @TransientService(Symbol.for('test'))
+  const ScopeService = requireTest()
+  const Container = require('../../../src/container').default
+  @ScopeService(Symbol.for('test'))
   // tslint:disable-next-line: no-unused-variable
   class Test {
     id = 1000
@@ -62,9 +62,9 @@ test('Add service with symbol identifier', () => {
 
 test('Add service with token identifier', () => {
   expect.assertions(1)
-  const TransientService = requireTest()
-  const Container = require('../../src/container').default
-  @TransientService(Token('test'))
+  const ScopeService = requireTest()
+  const Container = require('../../../src/container').default
+  @ScopeService(Token('test'))
   // tslint:disable-next-line: no-unused-variable
   class Test {
     id = 1000

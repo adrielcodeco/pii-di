@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Nullable } from './util'
+import { Nullable } from '@pii/utils'
 
 export default class KeyValue<K, V> {
   key: Nullable<K>

@@ -7,32 +7,16 @@
 
 import 'reflect-metadata'
 import Container from '../container'
+import InjectFunction from './injectLogic'
 
-export function InjectMany (option?: string | symbol): Function {
-  return function (
-    target: Object,
-    propertyName: string | symbol,
-    index?: number
-  ) {
-    // const propertyType = Reflect.getMetadata(
-    //   'design:type',
-    //   target,
-    //   propertyName
-    // )
-    const service = option || propertyName
-    // let _val = target[propertyName]
-    let getter = function () {
-      return Container.getServices(service)
-    }
-    let setter = function (newVal: any) {
-      throw new Error('This property has been injected, can not be setted')
-    }
-    Reflect.deleteProperty(target, propertyName)
-    Object.defineProperty(target, propertyName, {
-      get: getter,
-      set: setter,
-      enumerable: true,
-      configurable: true
-    })
-  }
+export function InjectMany (identifier?: any): Function {
+  return InjectFunction(
+    (identifier: any) => {
+      if (Container.has(identifier)) {
+        return Container.getServices(identifier)
+      }
+      return undefined
+    },
+    identifier
+  )
 }

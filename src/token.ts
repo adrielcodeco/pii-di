@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Class } from './util'
+import { Class } from '@pii/utils'
 
 function describe (Identifier: Class<any> | Function) {
   const instance = Identifier.prototype
@@ -15,10 +15,15 @@ function describe (Identifier: Class<any> | Function) {
   return Reflect.ownKeys(target)
     .concat(Object.keys(target))
     .concat(Object.getOwnPropertyNames(instance))
-    .filter((v, i, a) => a.indexOf(v) === i && v !== 'constructor')
+    .filter(
+      (v, i, a) =>
+        a.indexOf(v) === i && v !== 'constructor' && typeof v !== 'symbol'
+    )
 }
 
-export default function Token (identifier: string | Function | Class<any>): string {
+export default function Token (
+  identifier: string | Function | Class<any>
+): string {
   if (!identifier) {
     throw new Error('invalid token identifier')
   }

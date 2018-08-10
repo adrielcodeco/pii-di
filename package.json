@@ -1,6 +1,6 @@
 {
   "name": "@pii/di",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A library to dependency injection implementation",
   "main": "dist/index.js",
   "engines": {
@@ -10,6 +10,8 @@
     "lint": "gulp lint",
     "typecheck": "gulp typecheck",
     "test": "gulp test",
+    "test-unit": "gulp test-unit",
+    "test-bdd": "gulp test-bdd",
     "coveralls": "gulp coveralls",
     "build": "gulp build",
     "precommit": "gulp precommit"
@@ -33,6 +35,9 @@
     "url": "https://github.com/adrielcodeco/pii-di.git"
   },
   "license": "MIT",
+  "dependencies": {
+    "@pii/utils": "^1.1.0"
+  },
   "devDependencies": {
     "@types/jest": "^23.1.5",
     "@types/node": "^10.5.2",

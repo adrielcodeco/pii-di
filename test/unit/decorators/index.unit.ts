@@ -7,7 +7,7 @@
 export {}
 
 const requireTest = () => {
-  return require('../../src/decorators')
+  return require('../../../src/decorators')
 }
 
 test('require', () => {
