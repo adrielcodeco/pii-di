@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class KeyValue {
-    constructor(key, value) {
+var KeyValue = (function () {
+    function KeyValue(key, value) {
         this.key = key;
         this.value = value;
     }
-}
+    return KeyValue;
+}());
 exports.default = KeyValue;
 
 //# sourceMappingURL=keyValue.js.map

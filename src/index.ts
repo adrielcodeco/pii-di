@@ -5,6 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import Container from './container'
+
 export { default as Container } from './container'
 export { default as Token } from './token'
 export * from './decorators'
+
+const containerKey = '(@pii/di).filename'
+const containers = Container.getServices(containerKey)
+if (!containers.includes(__filename)) {
+  Container.addTransient(containerKey, __filename)
+}

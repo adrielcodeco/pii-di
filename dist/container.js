@@ -1,19 +1,30 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const factory_1 = require("./factory");
-const token_1 = require("./token");
-const keyValue_1 = require("./keyValue");
-const utils_1 = require("@pii/utils");
-const globalContainerKey = 'pii_di_container';
-const initializeGLobal = (_global) => {
-    _global[globalContainerKey] = [];
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-initializeGLobal(global);
-const globalContainer = Reflect.get(global, globalContainerKey);
-const singletonContainer = [];
-const transientContainer = [];
+Object.defineProperty(exports, "__esModule", { value: true });
+var factory_1 = __importDefault(require("./factory"));
+var token_1 = __importDefault(require("./token"));
+var keyValue_1 = __importDefault(require("./keyValue"));
+var utils_1 = require("@pii/utils");
+var globalContainerKey = 'pii_di_global_container';
+var singletonContainerKey = 'pii_di_singleton_container';
+var transientContainerKey = 'pii_di_transient_container';
+var initializeContainer = function (global, key) {
+    if (Reflect.has(global, key)) {
+        return Reflect.get(global, key);
+    }
+    else {
+        var container = [];
+        Reflect.set(global, key, container);
+        return container;
+    }
+};
+var globalContainer = initializeContainer(global, globalContainerKey);
+var singletonContainer = initializeContainer(Reflect.get(global, 'mainGlobal') || global, singletonContainerKey);
+var transientContainer = initializeContainer(Reflect.get(global, 'mainGlobal') || global, transientContainerKey);
 function findService(container, service) {
-    return container.filter(s => s.key === service).find(() => true);
+    return container.filter(function (s) { return s.key === service; }).find(function () { return true; });
 }
 function scopeService(service) {
     return findService(globalContainer, service);
@@ -26,7 +37,7 @@ function transientService(service) {
 }
 function addOneOrMany(container, service, value) {
     service = utils_1.isClass(service) ? token_1.default(service) : service;
-    const keyValue = findService(container, service);
+    var keyValue = findService(container, service);
     if (keyValue) {
         if (keyValue.value instanceof Array) {
             keyValue.value.push(value);
@@ -41,7 +52,7 @@ function addOneOrMany(container, service, value) {
 }
 function removeService(container, service) {
     service = utils_1.isClass(service) ? token_1.default(service) : service;
-    const keyValue = findService(container, service);
+    var keyValue = findService(container, service);
     if (keyValue) {
         container.splice(container.indexOf(keyValue), 1);
         return true;
@@ -51,9 +62,9 @@ function removeService(container, service) {
     }
 }
 function getInstanceOrValue(container, service) {
-    const keyValue = findService(container, service);
-    let values = keyValue.value instanceof Array ? keyValue.value : [keyValue.value];
-    const mapValues = (Value) => {
+    var keyValue = findService(container, service);
+    var values = keyValue.value instanceof Array ? keyValue.value : [keyValue.value];
+    var mapValues = function (Value) {
         if (Value instanceof factory_1.default) {
             return utils_1.cast(Value).newInstance();
         }
@@ -64,10 +75,10 @@ function getInstanceOrValue(container, service) {
             return utils_1.cast(Value);
         }
     };
-    return values.map(mapValues).filter(value => !!value);
+    return values.map(mapValues).filter(function (value) { return !!value; });
 }
 function getContainer(service) {
-    const containers = [];
+    var containers = [];
     if (scopeService(service)) {
         containers.push(globalContainer);
     }
@@ -82,41 +93,43 @@ function getContainer(service) {
 function isFactory(service) {
     return service && service.service && service.maker;
 }
-class Container {
-    static has(identifier) {
-        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+var Container = (function () {
+    function Container() {
+    }
+    Container.has = function (identifier) {
+        var service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
             ? utils_1.cast(identifier)
             : token_1.default(utils_1.cast(identifier));
         return (!!scopeService(service) ||
             !!singletonService(service) ||
             !!transientService(service));
-    }
-    static get(identifier) {
-        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+    };
+    Container.get = function (identifier) {
+        var service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
             ? utils_1.cast(identifier)
             : token_1.default(utils_1.cast(identifier));
-        const container = getContainer(service).find(() => true);
+        var container = getContainer(service).find(function () { return true; });
         if (!container)
             return undefined;
-        return getInstanceOrValue(container, service).find(() => true);
-    }
-    static getServices(identifier) {
-        const service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
+        return getInstanceOrValue(container, service).find(function () { return true; });
+    };
+    Container.getServices = function (identifier) {
+        var service = utils_1.isString(identifier) || utils_1.isSymbol(identifier)
             ? utils_1.cast(identifier)
             : token_1.default(utils_1.cast(identifier));
-        const container = getContainer(service);
-        const results = [];
-        container.forEach(c => {
-            getInstanceOrValue(c, service).forEach(r => results.push(r));
+        var container = getContainer(service);
+        var results = [];
+        container.forEach(function (c) {
+            getInstanceOrValue(c, service).forEach(function (r) { return results.push(r); });
         });
         return results;
-    }
-    static add(service, value) {
+    };
+    Container.add = function (service, value) {
         Container.addSingleton(service, value);
-    }
-    static addScoped(service, value) {
+    };
+    Container.addScoped = function (service, value) {
         if (isFactory(service)) {
-            const factory = service;
+            var factory = service;
             service = factory.service;
             value = new factory_1.default(undefined, true, factory.maker);
         }
@@ -125,10 +138,10 @@ class Container {
             service = token_1.default(service);
         }
         addOneOrMany(globalContainer, service, value);
-    }
-    static addTransient(service, value) {
+    };
+    Container.addTransient = function (service, value) {
         if (isFactory(service)) {
-            const factory = service;
+            var factory = service;
             service = factory.service;
             value = new factory_1.default(undefined, true, factory.maker);
         }
@@ -137,23 +150,30 @@ class Container {
             service = token_1.default(service);
         }
         addOneOrMany(transientContainer, service, value);
-    }
-    static addSingleton(service, value, replace = true) {
+    };
+    Container.addSingleton = function (service, value, replace) {
+        if (replace === void 0) { replace = true; }
         if (Container.has(service) && replace) {
             Container.removeSingleton(service);
         }
         addOneOrMany(singletonContainer, service, value);
-    }
-    static removeScoped(service) {
+    };
+    Container.removeScoped = function (service) {
         return removeService(globalContainer, service);
-    }
-    static removeTransient(service) {
+    };
+    Container.removeTransient = function (service) {
         return removeService(transientContainer, service);
-    }
-    static removeSingleton(service) {
+    };
+    Container.removeSingleton = function (service) {
         return removeService(singletonContainer, service);
-    }
-}
+    };
+    return Container;
+}());
 exports.default = Container;
+var containerKey = '(@pii/di/container).filename';
+var containers = Container.getServices(containerKey);
+if (!containers.includes(__filename)) {
+    Container.addTransient(containerKey, __filename);
+}
 
 //# sourceMappingURL=container.js.map

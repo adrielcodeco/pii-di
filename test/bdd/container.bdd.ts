@@ -4,11 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 export {}
 
 const requireTest = () => {
   jest.resetModules()
+  Reflect.deleteProperty(global, 'pii_di_global_container')
+  Reflect.deleteProperty(global, 'pii_di_singleton_container')
+  Reflect.deleteProperty(global, 'pii_di_transient_container')
   return require('../../src/container').default
 }
 
@@ -141,6 +145,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -155,12 +160,14 @@ describe('Container BDD suite', () => {
 
         test('returning first function class added when get service added with replace=false from container', () => {
           function Dummy1 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy1.prototype.getId = function () {
             return this.id
           }
           function Dummy2 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy2.prototype.getId = function () {
@@ -177,12 +184,14 @@ describe('Container BDD suite', () => {
 
         test('returning last function class added when get service added with replace=true from container', () => {
           function Dummy1 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy1.prototype.getId = function () {
             return this.id
           }
           function Dummy2 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy2.prototype.getId = function () {
@@ -201,13 +210,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton('identifier', dummy)
           const dummyInjected = test.get('identifier')
           expect(dummyInjected).toStrictEqual(dummy)
@@ -216,14 +226,15 @@ describe('Container BDD suite', () => {
 
         test('returning first function class instance added when get service added with replace=false from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton('identifier', dummy1)
           test.addSingleton('identifier', dummy2, false)
           const dummyInjected = test.get('identifier')
@@ -234,14 +245,15 @@ describe('Container BDD suite', () => {
 
         test('returning last function class instance added when get service added with replace=true from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton('identifier', dummy1)
           test.addSingleton('identifier', dummy2, true)
           const dummyInjected = test.get('identifier')
@@ -252,13 +264,14 @@ describe('Container BDD suite', () => {
 
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton('identifier', dummy)
           const dummyInjected1 = test.get('identifier')
           const dummyInjected2 = test.get('identifier')
@@ -324,8 +337,8 @@ describe('Container BDD suite', () => {
             id = Math.random()
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy1)
           test.addSingleton(Symbol.for('identifier'), dummy2, false)
           const dummyInjected = test.get(Symbol.for('identifier'))
@@ -339,8 +352,8 @@ describe('Container BDD suite', () => {
             id = Math.random()
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy1)
           test.addSingleton(Symbol.for('identifier'), dummy2, true)
           const dummyInjected = test.get(Symbol.for('identifier'))
@@ -354,7 +367,7 @@ describe('Container BDD suite', () => {
             id = Math.random()
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy)
           const dummyInjected1 = test.get(Symbol.for('identifier'))
           const dummyInjected2 = test.get(Symbol.for('identifier'))
@@ -365,12 +378,14 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning first function class added when get service added with replace=false from container', () => {
           function Dummy1 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy1.prototype.getId = function () {
             return this.id
           }
           function Dummy2 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy2.prototype.getId = function () {
@@ -387,12 +402,14 @@ describe('Container BDD suite', () => {
 
         test('returning last function class added when get service added with replace=true from container', () => {
           function Dummy1 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy1.prototype.getId = function () {
             return this.id
           }
           function Dummy2 () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy2.prototype.getId = function () {
@@ -411,14 +428,15 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning first function class instance added when get service added with replace=false from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy1)
           test.addSingleton(Symbol.for('identifier'), dummy2, false)
           const dummyInjected = test.get(Symbol.for('identifier'))
@@ -429,14 +447,15 @@ describe('Container BDD suite', () => {
 
         test('returning last function class instance added when get service added with replace=true from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy1 = new Dummy()
-          const dummy2 = new Dummy()
+          const dummy1 = new ((Dummy as any) as { new (): any })()
+          const dummy2 = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy1)
           test.addSingleton(Symbol.for('identifier'), dummy2, true)
           const dummyInjected = test.get(Symbol.for('identifier'))
@@ -447,13 +466,14 @@ describe('Container BDD suite', () => {
 
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton(Symbol.for('identifier'), dummy)
           const dummyInjected1 = test.get(Symbol.for('identifier'))
           const dummyInjected2 = test.get(Symbol.for('identifier'))
@@ -564,6 +584,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -580,13 +601,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton(AbstractDummy, dummy)
           const dummyInjected = test.get(AbstractDummy)
           expect(dummyInjected).toStrictEqual(dummy)
@@ -595,13 +617,14 @@ describe('Container BDD suite', () => {
 
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addSingleton(AbstractDummy, dummy)
           const dummyInjected1 = test.get(AbstractDummy)
           const dummyInjected2 = test.get(AbstractDummy)
@@ -660,6 +683,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -675,6 +699,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -691,13 +716,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addTransient('identifier', dummy)
           expect(test.get('identifier')).toStrictEqual(dummy)
         })
@@ -752,6 +778,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -767,6 +794,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -783,13 +811,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addTransient(Symbol.for('identifier'), dummy)
           expect(test.get(Symbol.for('identifier'))).toStrictEqual(dummy)
         })
@@ -872,6 +901,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -887,6 +917,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -903,13 +934,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addTransient(AbstractDummy, dummy)
           expect(test.get(AbstractDummy)).toStrictEqual(dummy)
         })
@@ -966,6 +998,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -981,6 +1014,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -997,13 +1031,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addScoped('identifier', dummy)
           expect(test.get('identifier')).toStrictEqual(dummy)
         })
@@ -1058,6 +1093,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -1073,6 +1109,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -1089,13 +1126,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addScoped(Symbol.for('identifier'), dummy)
           expect(test.get(Symbol.for('identifier'))).toStrictEqual(dummy)
         })
@@ -1178,6 +1216,7 @@ describe('Container BDD suite', () => {
       describe('and function class as value', () => {
         test('returning function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = 1001
           }
           Dummy.prototype.getId = function () {
@@ -1193,6 +1232,7 @@ describe('Container BDD suite', () => {
 
         test('returning new function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
@@ -1209,13 +1249,14 @@ describe('Container BDD suite', () => {
       describe('and function class instance as value', () => {
         test('returning same function class instance when get service from container', () => {
           function Dummy () {
+            // @ts-ignore
             this.id = Math.random()
           }
           Dummy.prototype.getId = function () {
             return this.id
           }
           const test = requireTest()
-          const dummy = new Dummy()
+          const dummy = new ((Dummy as any) as { new (): any })()
           test.addScoped(AbstractDummy, dummy)
           expect(test.get(AbstractDummy)).toStrictEqual(dummy)
         })

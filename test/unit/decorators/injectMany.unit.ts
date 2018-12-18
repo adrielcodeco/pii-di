@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 import 'reflect-metadata'
 import Token from '../../../src/token'
@@ -12,6 +13,9 @@ export {}
 
 const requireTest = () => {
   jest.resetModules()
+  Reflect.deleteProperty(global, 'pii_di_global_container')
+  Reflect.deleteProperty(global, 'pii_di_singleton_container')
+  Reflect.deleteProperty(global, 'pii_di_transient_container')
   return require('../../../src/decorators/injectMany').InjectMany
 }
 
@@ -22,7 +26,11 @@ test('require', () => {
   }).not.toThrow()
 })
 
-const testWithoutIdentifier = (method, result, replace?: any) => {
+const testWithoutIdentifier = (
+  method: ((c: any) => any),
+  result: any,
+  replace?: any
+) => {
   expect.assertions(1)
   const InjectMany = requireTest()
   const Container = require('../../../src/container').default
@@ -30,7 +38,8 @@ const testWithoutIdentifier = (method, result, replace?: any) => {
   method(Container)('id', 1001, replace)
   method(Container)('id', 1002, replace)
   class Test {
-    @InjectMany() id!: number[]
+    @InjectMany()
+    id!: number[]
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -54,7 +63,12 @@ describe('inject without identifier', () => {
   })
 })
 
-const testWithIdentifier = (method, identifier, result, replace?: boolean) => {
+const testWithIdentifier = (
+  method: ((c: any) => any),
+  identifier: any,
+  result: any,
+  replace?: boolean
+) => {
   expect.assertions(1)
   const InjectMany = requireTest()
   const Container = require('../../../src/container').default
@@ -62,7 +76,8 @@ const testWithIdentifier = (method, identifier, result, replace?: boolean) => {
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @InjectMany(identifier) id: number[]
+    @InjectMany(identifier)
+    id!: number[]
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -109,7 +124,11 @@ describe('inject with symbol identifier', () => {
   })
 
   test('with scoped Container', () => {
-    testWithIdentifier(c => c.addScoped, Symbol.for('test'), [1000, 1001, 1002])
+    testWithIdentifier(c => c.addScoped, Symbol.for('test'), [
+      1000,
+      1001,
+      1002
+    ])
   })
 })
 
@@ -136,7 +155,10 @@ describe('inject with token identifier', () => {
   })
 })
 
-const testWithClassIdentifier = (method, replace?: boolean) => {
+const testWithClassIdentifier = (
+  method: ((c: any) => any),
+  replace?: boolean
+) => {
   class Key {}
   expect.assertions(1)
   const InjectMany = requireTest()
@@ -146,7 +168,8 @@ const testWithClassIdentifier = (method, replace?: boolean) => {
   method(Container)(Key, k1, replace)
   method(Container)(Key, k2, replace)
   class Test {
-    @InjectMany(Key) id2!: any[]
+    @InjectMany(Key)
+    id2!: any[]
   }
   const test = new Test()
   expect(test.id2).toStrictEqual(replace ? [k2] : [k1, k2])
@@ -171,8 +194,8 @@ describe('inject with class identifier', () => {
 })
 
 const testFailOnSetInjectedProperty = (
-  method,
-  identifier,
+  method: ((c: any) => any),
+  identifier: any,
   replace?: boolean
 ) => {
   expect.assertions(2)
@@ -182,7 +205,8 @@ const testFailOnSetInjectedProperty = (
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @InjectMany(identifier) id!: number[]
+    @InjectMany(identifier)
+    id?: number[]
   }
   const test = new Test()
   expect(() => {
@@ -258,8 +282,8 @@ describe('fail on set injected property', () => {
 })
 
 const testFailOnInjectOnSealedObject = (
-  method,
-  identifier,
+  method: ((c: any) => any),
+  identifier: any,
   replace?: boolean
 ) => {
   expect.assertions(1)
@@ -268,16 +292,16 @@ const testFailOnInjectOnSealedObject = (
   method(Container)(identifier, 1000, replace)
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
-  function sealed (target, propertyName, index) {
+  function sealed (target: Object, propertyName: string | symbol, index?: any) {
     Object.seal(target)
   }
   expect(() => {
-    // tslint:disable-next-line: no-unused-variable
     class Test {
       @InjectMany(identifier)
       @sealed
       id!: number[]
     }
+    new Test()
   }).toThrowError(/Cannot define property[\s:]id, object is not extensible/)
 }
 

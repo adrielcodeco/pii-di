@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 import 'reflect-metadata'
 import Token from '../../../src/token'
@@ -12,6 +13,9 @@ export {}
 
 const requireTest = () => {
   jest.resetModules()
+  Reflect.deleteProperty(global, 'pii_di_global_container')
+  Reflect.deleteProperty(global, 'pii_di_singleton_container')
+  Reflect.deleteProperty(global, 'pii_di_transient_container')
   return require('../../../src/decorators/inject').Inject
 }
 
@@ -22,7 +26,11 @@ test('require', () => {
   }).not.toThrow()
 })
 
-const testWithoutIdentifier = (method, result, replace?: any) => {
+const testWithoutIdentifier = (
+  method: ((c: any) => any),
+  result: any,
+  replace?: any
+) => {
   expect.assertions(1)
   const Inject = requireTest()
   const Container = require('../../../src/container').default
@@ -30,7 +38,8 @@ const testWithoutIdentifier = (method, result, replace?: any) => {
   method(Container)('id', 1001, replace)
   method(Container)('id', 1002, replace)
   class Test {
-    @Inject() id!: number
+    @Inject()
+    id!: number
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -54,7 +63,12 @@ describe('inject without identifier', () => {
   })
 })
 
-const testWithIdentifier = (method, identifier, result, replace?: boolean) => {
+const testWithIdentifier = (
+  method: ((c: any) => any),
+  identifier: any,
+  result: any,
+  replace?: boolean
+) => {
   expect.assertions(1)
   const Inject = requireTest()
   const Container = require('../../../src/container').default
@@ -62,7 +76,8 @@ const testWithIdentifier = (method, identifier, result, replace?: boolean) => {
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @Inject(identifier) id!: number
+    @Inject(identifier)
+    id!: number
   }
   const test = new Test()
   expect(test.id).toEqual(result)
@@ -122,8 +137,11 @@ describe('inject with token identifier', () => {
   })
 })
 
-const testWithClassIdentifier = (method, replace?: boolean) => {
-  class Key { }
+const testWithClassIdentifier = (
+  method: ((c: any) => any),
+  replace?: boolean
+) => {
+  class Key {}
   expect.assertions(2)
   const Inject = requireTest()
   const Container = require('../../../src/container').default
@@ -132,8 +150,10 @@ const testWithClassIdentifier = (method, replace?: boolean) => {
   method(Container)(Key, k1, replace)
   method(Container)(Key, k2, replace)
   class Test {
-    @Inject() id1!: Key
-    @Inject(Key) id2!: any
+    @Inject()
+    id1!: Key
+    @Inject(Key)
+    id2!: any
   }
   const test = new Test()
   expect(test.id1).toEqual(replace ? k2 : k1)
@@ -141,7 +161,6 @@ const testWithClassIdentifier = (method, replace?: boolean) => {
 }
 
 describe('inject with class identifier', () => {
-
   test('with singleton(replace = false) Container', () => {
     testWithClassIdentifier(c => c.addSingleton, false)
   })
@@ -160,8 +179,8 @@ describe('inject with class identifier', () => {
 })
 
 const testFailOnSetInjectedProperty = (
-  method,
-  identifier,
+  method: ((c: any) => any),
+  identifier: any,
   replace?: boolean
 ) => {
   expect.assertions(2)
@@ -171,10 +190,13 @@ const testFailOnSetInjectedProperty = (
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
   class Test {
-    @Inject(identifier) id!: number
+    @Inject(identifier)
+    id?: number
   }
   const test = new Test()
-  expect(() => { test.id = undefined }).not.toThrow()
+  expect(() => {
+    test.id = undefined
+  }).not.toThrow()
   expect(() => {
     test.id = 1
   }).toThrowError(/This property has been injected, can not be setted/)
@@ -245,8 +267,8 @@ describe('fail on set injected property', () => {
 })
 
 const testFailOnInjectOnSealedObject = (
-  method,
-  identifier,
+  method: ((c: any) => any),
+  identifier: any,
   replace?: boolean
 ) => {
   expect.assertions(1)
@@ -255,7 +277,7 @@ const testFailOnInjectOnSealedObject = (
   method(Container)(identifier, 1000, replace)
   method(Container)(identifier, 1001, replace)
   method(Container)(identifier, 1002, replace)
-  function sealed (target, propertyName, index) {
+  function sealed (target: Object, propertyName: string | symbol, index?: any) {
     Object.seal(target)
   }
   expect(() => {
@@ -265,6 +287,7 @@ const testFailOnInjectOnSealedObject = (
       @sealed
       id!: number
     }
+    new Test()
   }).toThrowError(/Cannot define property[\s:]id, object is not extensible/)
 }
 

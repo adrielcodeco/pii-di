@@ -12,14 +12,28 @@ import { isString, isSymbol, isClass, Nullable, Class, cast } from '@pii/utils'
 
 type ContainerType < T > = KeyValue<any, T>[]
 
-const globalContainerKey: string = 'pii_di_container'
-const initializeGLobal = (_global: any) => {
-  _global[globalContainerKey] = []
+const globalContainerKey: string = 'pii_di_global_container'
+const singletonContainerKey: string = 'pii_di_singleton_container'
+const transientContainerKey: string = 'pii_di_transient_container'
+
+const initializeContainer = (global: any, key: string): ContainerType<any> => {
+  if (Reflect.has(global, key)) {
+    return Reflect.get(global, key)
+  } else {
+    const container: ContainerType<any> = []
+    Reflect.set(global, key, container)
+    return container
+  }
 }
-initializeGLobal(global)
-const globalContainer = Reflect.get(global, globalContainerKey)
-const singletonContainer: ContainerType<any> = []
-const transientContainer: ContainerType<any> = []
+const globalContainer = initializeContainer(global, globalContainerKey)
+const singletonContainer = initializeContainer(
+  Reflect.get(global, 'mainGlobal') || global,
+  singletonContainerKey
+)
+const transientContainer = initializeContainer(
+  Reflect.get(global, 'mainGlobal') || global,
+  transientContainerKey
+)
 
 type ContainerFieldTypes < T > = T | T[] | undefined | Function | Class<T>
 type Identifier < T > = string | Symbol | Class<T> | Function
@@ -54,7 +68,7 @@ function addOneOrMany<T> (
   service: Identifier<T>,
   value: any
 ): void {
-  service = isClass(service) ? Token(service as Class<T>) : service
+  service = isClass(service) ? Token(service) : service
   const keyValue = findService(container, service)
   if (keyValue) {
     if (keyValue.value instanceof Array) {
@@ -72,7 +86,7 @@ function addOneOrMany<T> (
 }
 
 function removeService (container: ContainerType<any>, service: any): boolean {
-  service = isClass(service) ? Token(service as Class<any>) : service
+  service = isClass(service) ? Token(service) : service
   const keyValue = findService(container, service)
   if (keyValue) {
     container.splice(container.indexOf(keyValue), 1)
@@ -96,7 +110,7 @@ function getInstanceOrValue<T> (
     if (Value instanceof ServiceInstanceFactory) {
       return cast<ServiceInstanceFactory<T>>(Value).newInstance()
     } else if (container !== singletonContainer && isClass(Value)) {
-      return new (Value as Class<T>)()
+      return new Value()
     } else {
       return cast<T>(Value)
     }
@@ -183,7 +197,7 @@ export default class Container {
     }
     if (!value && isClass(service)) {
       value = service
-      service = Token(service as Class<T>)
+      service = Token(service)
     }
     addOneOrMany<T>(globalContainer, service, value)
   }
@@ -203,7 +217,7 @@ export default class Container {
     }
     if (!value && isClass(service)) {
       value = service
-      service = Token(service as Class<T>)
+      service = Token(service)
     }
     addOneOrMany<T>(transientContainer, service, value)
   }
@@ -242,4 +256,10 @@ export default class Container {
   public static removeSingleton<T> (service: Identifier<T>): boolean {
     return removeService(singletonContainer, service)
   }
+}
+
+const containerKey = '(@pii/di/container).filename'
+const containers = Container.getServices(containerKey)
+if (!containers.includes(__filename)) {
+  Container.addTransient(containerKey, __filename)
 }

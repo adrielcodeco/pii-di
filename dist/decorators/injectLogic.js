@@ -1,12 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
-const utils_1 = require("@pii/utils");
-const token_1 = require("../token");
+var utils_1 = require("@pii/utils");
+var token_1 = __importDefault(require("../token"));
 function InjectFunction(containerServiceGetter, identifier) {
     return function (target, propertyName, index) {
-        let type;
-        let services;
+        var type;
+        var services;
         if (typeof identifier !== 'string' &&
             typeof identifier !== 'symbol' &&
             utils_1.isClass(identifier)) {
@@ -16,13 +19,13 @@ function InjectFunction(containerServiceGetter, identifier) {
             type = Reflect.getMetadata('design:type', target, propertyName);
             services = [identifier, type, token_1.default(type), propertyName];
         }
-        let getter = function () {
+        var getter = function () {
             return services
-                .filter(s => s)
-                .map(s => containerServiceGetter(s))
-                .find((s) => s);
+                .filter(function (s) { return s; })
+                .map(function (s) { return containerServiceGetter(s); })
+                .find(function (s) { return s; });
         };
-        let setter = function (newVal) {
+        var setter = function (newVal) {
             if (!newVal)
                 return;
             throw new Error('This property has been injected, can not be setted');

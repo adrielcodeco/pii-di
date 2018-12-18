@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 export {}
 
@@ -41,7 +42,7 @@ describe('Inject BDD suite', () => {
     class Identifier { }
     Container.addSingleton(Identifier, 1001)
     class Dummy {
-      @Inject() id: Identifier
+      @Inject() id?: Identifier
     }
     const dummy = new Dummy()
     expect(dummy.id).toEqual(1001)
@@ -53,7 +54,7 @@ describe('Inject BDD suite', () => {
     class Identifier { }
     Container.addSingleton(Identifier, 1001)
     class Dummy {
-      @Inject(Identifier) id: any
+      @Inject(Identifier) id?: any
     }
     const dummy = new Dummy()
     expect(dummy.id).toEqual(1001)

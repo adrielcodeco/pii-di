@@ -1,1 +1,1 @@
-{"version":3,"sources":["../../src/decorators/inject.ts"],"names":[],"mappings":";;AAOA,4BAAyB;AACzB,4CAAoC;AACpC,+CAA0C;AAE1C,gBAAwB,UAAgB;IACtC,OAAO,qBAAc,CAAC,mBAAS,CAAC,GAAG,EAAE,UAAU,CAAC,CAAA;AAClD,CAAC;AAFD,wBAEC","file":"inject.js"}
+{"version":3,"sources":["../../src/decorators/inject.ts"],"names":[],"mappings":";;;;;AAOA,4BAAyB;AACzB,2DAAoC;AACpC,8DAA0C;AAE1C,SAAgB,MAAM,CAAE,UAAgB;IACtC,OAAO,qBAAc,CAAC,mBAAS,CAAC,GAAG,EAAE,UAAU,CAAC,CAAA;AAClD,CAAC;AAFD,wBAEC","file":"inject.js"}

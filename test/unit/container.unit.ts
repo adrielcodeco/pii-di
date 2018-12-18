@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 export {}
 
@@ -11,6 +12,9 @@ const Token = require('../../src/token').default
 
 const requireTest = () => {
   jest.resetModules()
+  Reflect.deleteProperty(global, 'pii_di_global_container')
+  Reflect.deleteProperty(global, 'pii_di_singleton_container')
+  Reflect.deleteProperty(global, 'pii_di_transient_container')
   return require('../../src/container').default
 }
 
@@ -21,7 +25,9 @@ test('require', () => {
   }).not.toThrow()
 })
 
-const testFoundValueOnScope = makeTest => {
+const testFoundValueOnScope = (
+  makeTest: (f: (c: any) => any, key: () => any) => void
+) => {
   describe('on scope', () => {
     test('for string service key', () => {
       makeTest(c => c.addScoped, () => 'test')
@@ -37,7 +43,9 @@ const testFoundValueOnScope = makeTest => {
   })
 }
 
-const testFoundValueOnSingleton = makeTest => {
+const testFoundValueOnSingleton = (
+  makeTest: (f: (c: any) => any, key: () => any) => void
+) => {
   describe('on singleton', () => {
     test('for string service key', () => {
       makeTest(c => c.addSingleton, () => 'test')
@@ -53,7 +61,9 @@ const testFoundValueOnSingleton = makeTest => {
   })
 }
 
-const testFoundValueOnTransient = makeTest => {
+const testFoundValueOnTransient = (
+  makeTest: (f: (c: any) => any, key: () => any) => void
+) => {
   describe('on transient', () => {
     test('for string service key', () => {
       makeTest(c => c.addTransient, () => 'test')
@@ -69,7 +79,10 @@ const testFoundValueOnTransient = makeTest => {
   })
 }
 
-const testNotFoundValue = (method, ex) => {
+const testNotFoundValue = (
+  method: (c: any) => any,
+  ex: (e: any) => any
+) => {
   describe('value not found', () => {
     test('for string service key', () => {
       expect.assertions(1)
@@ -114,7 +127,7 @@ describe('happy path', () => {
     testNotFoundValue(c => c.has, ex => ex.toBeFalsy())
 
     describe('value found', () => {
-      const makeTest = (add, key) => {
+      const makeTest = (add: any, key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         add(Container)(key(), 1000)
@@ -130,7 +143,7 @@ describe('happy path', () => {
     testNotFoundValue(c => c.get, ex => ex.toBeUndefined())
 
     describe('value found', () => {
-      const makeTest = (add, key) => {
+      const makeTest = (add: any, key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         add(Container)(key(), 1000)
@@ -139,7 +152,7 @@ describe('happy path', () => {
         expect(Container.get(key())).toEqual(1000)
       }
       testFoundValueOnScope(makeTest)
-      testFoundValueOnSingleton((add, key) => {
+      testFoundValueOnSingleton((add: any, key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         add(Container)(key(), 1000)
@@ -155,7 +168,7 @@ describe('happy path', () => {
     testNotFoundValue(c => c.getServices, ex => ex.toEqual([]))
 
     describe('value found', () => {
-      const makeTest = (add, key) => {
+      const makeTest = (add: any, key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         add(Container)(key(), 1000)
@@ -164,7 +177,7 @@ describe('happy path', () => {
         expect(Container.getServices(key())).toEqual([1000, 1001, 1002])
       }
       testFoundValueOnScope(makeTest)
-      testFoundValueOnSingleton((add, key) => {
+      testFoundValueOnSingleton((add: any, key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         add(Container)(key(), 1000)
@@ -178,7 +191,7 @@ describe('happy path', () => {
 
   describe('call add', () => {
     const value = { test: '@pii' }
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(1)
       const Container = requireTest()
       Container.add(key, value)
@@ -200,7 +213,7 @@ describe('happy path', () => {
 
   describe('call addScoped', () => {
     const value = { test: '@pii' }
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(1)
       const Container = requireTest()
       Container.addScoped(key, value)
@@ -223,7 +236,7 @@ describe('happy path', () => {
   describe('call addTransient', () => {
     describe('with object value', () => {
       const value = { test: '@pii' }
-      const makeTest = key => {
+      const makeTest = (key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         Container.addTransient(key, value)
@@ -250,7 +263,7 @@ describe('happy path', () => {
           this.test = Math.random()
         }
       }
-      const makeTest = key => {
+      const makeTest = (key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         Container.addTransient(key, value)
@@ -277,7 +290,7 @@ describe('happy path', () => {
           this.test = Math.random()
         }
       }
-      const makeTest = key => {
+      const makeTest = (key: any) => {
         expect.assertions(1)
         const Container = requireTest()
         const ServiceInstanceFactory = require('../../src/factory').default
@@ -312,7 +325,7 @@ describe('happy path', () => {
       class Test {
         test: number = Math.random()
       }
-      const makeTest = key => {
+      const makeTest = (key: any) => {
         expect.assertions(2)
         const Container = requireTest()
         const test = new Test()
@@ -340,7 +353,7 @@ describe('happy path', () => {
   })
 
   describe('call addSingleton', () => {
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(2)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -363,7 +376,7 @@ describe('happy path', () => {
   })
 
   describe('call addSingleton with replace = false', () => {
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(3)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -388,7 +401,7 @@ describe('happy path', () => {
 
   describe('call removeScoped', () => {
     const value = { test: '@pii' }
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(4)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -412,7 +425,7 @@ describe('happy path', () => {
   })
 
   describe('call removeScoped when service not exists in container', () => {
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(3)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -435,7 +448,7 @@ describe('happy path', () => {
 
   describe('call removeTransient', () => {
     const value = { test: '@pii' }
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(4)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -459,7 +472,7 @@ describe('happy path', () => {
   })
 
   describe('call removeTransient when service not exists in container', () => {
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(3)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -482,7 +495,7 @@ describe('happy path', () => {
 
   describe('call removeSingleton', () => {
     const value = { test: '@pii' }
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(4)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()
@@ -506,7 +519,7 @@ describe('happy path', () => {
   })
 
   describe('call removeSingleton when service not exists in container', () => {
-    const makeTest = key => {
+    const makeTest = (key: any) => {
       expect.assertions(3)
       const Container = requireTest()
       expect(Container.has(key)).toBeFalsy()

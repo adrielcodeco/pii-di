@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+/* eslint-env jest */
 
 export {}
 
@@ -30,6 +31,7 @@ describe('Token BDD suite', () => {
 
   test('with function class identifier', () => {
     function Dummy () {
+      // @ts-ignore
       this.id = Math.random()
     }
     Dummy.prototype.getId = function () {

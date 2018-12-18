@@ -3,7 +3,6 @@ const gulp = require('gulp')
 const runSequence = require('run-sequence')
 const sourcemaps = require('gulp-sourcemaps')
 const ts = require('gulp-typescript')
-const prettierEslint = require('gulp-prettier-eslint')
 const merge = require('merge2')
 
 const tsProject = ts.createProject(require.resolve('../../tsconfig.json'))
@@ -31,9 +30,7 @@ gulp.task('ts-build', () => {
           )
         })
       )
-      .pipe(
-        sourcemaps.write('.', { includeContent: false })
-      )
+      .pipe(sourcemaps.write('.', { includeContent: false }))
       .pipe(gulp.dest(tsProject.config.compilerOptions.outDir))
   ])
 })
